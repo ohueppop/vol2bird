@@ -349,7 +349,7 @@ int main(int argc, char** argv) {
             int nRowsProfile = vol2birdGetNRowsProfile(&alldata);
             int nColsProfile = vol2birdGetNColsProfile(&alldata);
             
-            fprintf(stdout, "# vol2bird Vertical Profile of Birds (VPB)\n");
+            fprintf(stdout, "# vol2bird Vertical Profile of Birds (VPB) - with reduced NBINSGAP \n");
             fprintf(stdout, "# source: %s\n",source);
             fprintf(stdout, "# polar volume input: %s\n",fileIn[0]);
             if (alldata.misc.vcp > 0) fprintf(stdout, "# volume coverage pattern (VCP): %i\n", alldata.misc.vcp);
