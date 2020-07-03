@@ -20,7 +20,7 @@
 #define FRINGEDIST 5000.0
 // when determining whether there are enough vrad observations in
 // each direction, use NBINSGAP sectors
-// #define NBINSGAP 8 - changed to 3 ohueppop 03.07.2020
+// #define NBINSGAP 8 - changed to 2 ohueppop 03.07.2020
 #define NBINSGAP 2
 // there should be at least NOBSGAPMIN vrad observations in each sector
 #define NOBSGAPMIN 5
