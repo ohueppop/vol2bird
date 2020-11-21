@@ -272,6 +272,9 @@ int main(int argc, char** argv) {
     if (fileVpOut != NULL){
         strcpy(alldata.misc.filename_vp,fileVpOut);
     }
+    else{
+        strcpy(alldata.misc.filename_vp,"");
+    }
     
     // read configuration options
     int configSuccessful = vol2birdLoadConfig(&alldata) == 0;
@@ -287,12 +290,12 @@ int main(int argc, char** argv) {
 
     volume = vol2birdGetVolume(fileIn, nInputFiles, 1000000,1);
     //volume = vol2birdGetVolume(fileIn, nInputFiles, alldata.misc.rCellMax,1);
-        
+
     if (volume == NULL) {
         fprintf(stderr,"Error: failed to read radar volume\n");
         return -1;
     }
-    
+
    // loading static clutter map upon request
     if (alldata.options.useClutterMap){
         int clutterSuccessful = vol2birdLoadClutterMap(volume, alldata.options.clutterMap,alldata.misc.rCellMax) == 0;

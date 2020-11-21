@@ -391,7 +391,7 @@ static void classifyGatesSimple(vol2bird_t* alldata) {
         unsigned int gateCode = 0;
         
         if (alldata->options.useClutterMap && clutValue > alldata->options.clutterValueMin) {
-            // this gate is true in the static clutter map (which we don't have yet TODO)
+            // this gate is true in the static clutter map
             gateCode |= 1<<(alldata->flags.flagPositionStaticClutter);
         }
 
@@ -1947,6 +1947,7 @@ static int getListOfSelectedGates(PolarScan_t* scan, vol2birdScanUse_t scanUse, 
 
 int vol2birdLoadClutterMap(PolarVolume_t* volume, char* file, float rangeMax){
     PolarVolume_t* clutVol = NULL;
+
     clutVol = vol2birdGetVolume(&file, 1, rangeMax,1);
             
     if(clutVol == NULL){
@@ -1983,8 +1984,13 @@ int vol2birdLoadClutterMap(PolarVolume_t* volume, char* file, float rangeMax){
         scan = PolarVolume_getScan(volume, iScan);
         
         // extract the cluttermap scan parameter closest in elevation
-        elev = PolarScan_getElangle(scan); 	
+        elev = PolarScan_getElangle(scan);
+
+        //FIXME: here PolarVolume_getScanClosestToElevation_vol2bird leads to a segmentation fault. It finds the correct scan, but
+        //any operation here on the pointer leads to segfault...
+        //clutScan = PolarVolume_getScanClosestToElevation_vol2bird(clutVol,elev);
         clutScan = PolarVolume_getScanClosestToElevation(clutVol,elev,0);
+
         param = PolarScan_getParameter(clutScan,CLUTNAME);
         
         if(param == NULL){
@@ -1999,6 +2005,7 @@ int vol2birdLoadClutterMap(PolarVolume_t* volume, char* file, float rangeMax){
         
         // add the clutter map scan parameter to the polar volume
         result = PolarScan_addParameter(scan, param_proj);
+
         if(result == 0){
             fprintf(stderr, "Warning in loadClutterMap: failed to add cluttermap for scan %i\n",iScan+1); 
         }
@@ -2370,13 +2377,17 @@ PolarScanParam_t* PolarScanParam_resample(PolarScanParam_t* param, double rscale
     long nrays = PolarScanParam_getNrays(param);
     
     double bin_scaling = rscale_proj/rscale;
-    double ray_scaling = nrays/nrays_proj;
+    double ray_scaling = (double) nrays/nrays_proj;
     
     param_proj = RAVE_OBJECT_NEW(&PolarScanParam_TYPE);
     
+    if (param_proj == NULL || !PolarScanParam_createData(param_proj, nbins_proj, nrays_proj, RaveDataType_DOUBLE)) {
+        RAVE_ERROR0("Failed to create resampled polar scan parameter");
+        goto error;
+    }
+    
     // copy the metadata
     PolarScanParam_setQuantity(param_proj, PolarScanParam_getQuantity(param));
-    PolarScanParam_createData(param_proj,nbins_proj,nrays_proj,RaveDataType_DOUBLE);
     PolarScanParam_setOffset(param_proj,PolarScanParam_getOffset(param));
     PolarScanParam_setGain(param_proj,PolarScanParam_getGain(param));
     PolarScanParam_setNodata(param_proj,PolarScanParam_getNodata(param));
@@ -2391,15 +2402,15 @@ PolarScanParam_t* PolarScanParam_resample(PolarScanParam_t* param, double rscale
             // initialize to nodata
             PolarScanParam_setValue(param_proj, iBin, iRay, PolarScanParam_getNodata(param));
             // read data from the scan parameter
-            valueType = PolarScanParam_getValue(param, round(iBin*bin_scaling), round(iRay*ray_scaling), &value);
+            valueType = PolarScanParam_getValue(param, round(iBin*bin_scaling - 0.499999), round(iRay*ray_scaling - 0.499999), &value);
             // write data from the source scan parameter, to the newly projected scan paramter
             if (valueType != RaveValueType_UNDEFINED){
                 PolarScanParam_setValue(param_proj, iBin, iRay, value);
             }
         }
     }
-
-    return param_proj;
+    error:
+        return param_proj;
 }
 
 
@@ -2455,7 +2466,7 @@ static int includeGate(const int iProfileType, const int iQuantityType, const un
     if (gateCode & 1<<(alldata->flags.flagPositionStaticClutter)) {
         
         // i.e. flag 0 in gateCode is true
-        // this gate is true in the static clutter map (which we don't have yet TODO)
+        // this gate is true in the static clutter map
         
         switch (iProfileType) {
             case 1 : 
@@ -4946,9 +4957,9 @@ int vol2birdSetUp(PolarVolume_t* volume, vol2bird_t* alldata) {
     alldata->points.vradValueCol = 3;
     alldata->points.cellValueCol = 4;
     alldata->points.gateCodeCol = 5;
-	alldata->points.nyquistCol = 6;
-	alldata->points.vraddValueCol = 7;
-	alldata->points.clutValueCol = 8;
+    alldata->points.nyquistCol = 6;
+    alldata->points.vraddValueCol = 7;
+    alldata->points.clutValueCol = 8;
 
     // pre-allocate the 'points' array (note it has 'nColsPoints'
     // pseudo-columns)

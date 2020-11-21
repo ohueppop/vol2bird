@@ -105,7 +105,7 @@ wget https://download.pytorch.org/libtorch/cpu/libtorch-macos-1.3.0.zip \
 # change to radar root directory
 cd ${RADAR_ROOT_DIR}
 # get a copy of the MistNet model
-RUN mkdir MistNet && cd MistNet && wget http://mistnet.s3.amazonaws.com/mistnet_nexrad.pt
+mkdir MistNet && cd MistNet && wget http://mistnet.s3.amazonaws.com/mistnet_nexrad.pt
 
 cd ${RADAR_ROOT_DIR}/src 
 
@@ -129,18 +129,11 @@ export GSLROOT=/usr/include/gsl,/usr/lib/x86_64-linux-gnu
     --with-rave=${RADAR_ROOT_DIR}/opt/rave \
 	--with-rsl=${RADAR_ROOT_DIR}/opt/rsl \
     --with-libtorch=${RADAR_ROOT_DIR}/opt/libtorch \
-    --with-gsl=${GSLROOT}
+    --with-gsl=${GSLROOT} \
 	--with-confuse=${CONFUSEROOT}
 # build and install:
 make
 sudo make install
-
-cd ${RADAR_ROOT_DIR}/opt
-
-# (optional) get a copy of MistNet model
-# only needed for running MistNet
-mkdir MistNet && cd MistNet && wget http://mistnet.s3.amazonaws.com/mistnet_nexrad.pt \
-    && cd ..
 
 cd ${RADAR_ROOT_DIR}
 
